@@ -77,7 +77,7 @@ void checarTexto(char *v)
     else
     {
         printf("Comando invalido! Digite novamente. [sim/nao] ");
-        scanf("%s", &v);
+        scanf(" %s", v);
         checarTexto(v);
     }
 }
@@ -109,7 +109,7 @@ user *checarLogin(user *estrutura)
         {
             printf("Usuario inexistente. Finalizando operacao!\n");
             cont = 0;
-            return posicao;
+            return posicao; //RETURN TA DANDO SEGMENTATION FAULT
         }
         printf("Usuario nao encontrado, por favor, tente novamente.\n");
         checarLogin(estrutura);
@@ -176,13 +176,13 @@ void receberCliente(user *admin, int *notas, int *loop)
     char res[3];
     printf("Bem vindo ao Banco do Programador!\n");
     printf("Deseja efetuar operacoes de administrador? [sim/nao] ");
-    scanf(" %3s", &res);
+    scanf(" %s", &res);
     checarTexto(res);
     if (strcmp(res, "sim") == 0)
     {
         admin = checarLogin(admin);
         printf("Deseja desligar a maquina? [sim/nao] ");
-        scanf(" %3s", &res);
+        scanf(" %s", &res);
         if (strcmp(res, "sim") == 0)
         {
             *loop = 0;
@@ -200,14 +200,14 @@ void receberCliente(user *admin, int *notas, int *loop)
     else
     {
         printf("Voce ja eh cliente? [sim/nao] ");
-        scanf(" %3s", &res);
+        scanf(" %s", &res);
         checarTexto(res);
         if (strcmp(res, "sim") == 0)
             menuCliente(notas, checarLogin(admin));
         else
         {
             printf("Deseja criar uma conta em nosso banco? [sim/nao] ");
-            scanf(" %3s", &res);
+            scanf(" %s", &res);
             checarTexto(res);
             if (strcmp(res, "sim") == 0)
             {
@@ -257,19 +257,17 @@ void cadastraCliente(user *admin)
 
 void menuCliente(int *notas, user *cliente)
 {
-    printf("salve");
     if (cliente == NULL) {
         printf("entrei.");
         return;
     }
-    printf("ignorei.");
     char res[3];
-    printf("Voce possui um saldo de R$ %.2f.\n", cliente->saldo);
+    printf("Voce possui um saldo de R$ %d,00.\n", cliente->saldo);
     if (cliente->saldo == 0)
     {
         printf("Com esse saldo voce apenas pode realizar depositos.\n");
         printf("Deseja realizar um deposito agora? [sim/nao] ");
-        scanf(" %3s", &res);
+        scanf(" %s", &res);
         checarTexto(res);
         if (strcmp(res, "nao") == 0)
             printf("Encerrando sessao.\nObrigado, volte sempre!\n");
@@ -284,14 +282,14 @@ void menuCliente(int *notas, user *cliente)
         int rets, retd;
         char v[8], s[] = "saque", d[] = "deposito";
         printf("Digite a operacao que deseja realizar: [saque/deposito] ");
-        scanf(" %8s", &v);
+        scanf(" %s", &v);
         rets = strncmp(v, s, 5);
         retd = strncmp(v, d, 8);
         while (rets != 0 && retd != 0)
         {
             printf("Comando invalido!\n");
             printf("Digite a operacao que deseja realizar: [saque/deposito] ");
-            scanf(" %8s", &v);
+            scanf(" %s", &v);
             rets = strncmp(v, s, 5);
             retd = strncmp(v, d, 8);
         }
@@ -317,12 +315,12 @@ void msgOperacao(int *notas, user *cliente)
 {
     char res[3];
     printf("Deseja realizar outra operacao? [sim/nao] ");
-    scanf(" %3s", &res);
+    scanf(" %s", &res);
     checarTexto(res);
     if (strcmp(res, "nao") == 0)
     {
         printf("O seu saldo atual eh de R$ %d,00.\n", cliente->saldo);
-        printf("Encerrando sessao.\nObrigado, volte sempre!");
+        printf("Encerrando sessao.\nObrigado, volte sempre!\n");
     }
     else
         menuCliente(notas, cliente);
@@ -384,8 +382,8 @@ int depositar(int *notas, int saldo)
     while (soma != valor)
     {
         printf("O valor a ser depositado nao corresponde com as cedulas inseridas.\n");
-        printf("Voce inseriu R$ %d,00. Deseja depositar essa quantia? [sim/nao] ");
-        scanf(" %3s", &res);
+        printf("Voce inseriu R$ %d,00. Deseja depositar essa quantia? [sim/nao] ", soma);
+        scanf(" %s", &res);
         checarTexto(res);
         if (strcmp(res, "sim") == 0)
         {
@@ -393,22 +391,23 @@ int depositar(int *notas, int saldo)
                 notas[i] += dep[i];
             notas[7] += soma;
             printf("Operacao realizada com sucesso!\n");
-            printf("O seu novo saldo é de R$ %d,00.\n", saldo + soma);
+            printf("O seu novo saldo eh de R$ %d,00.\n", saldo + soma);
             return (saldo + soma);
         }
         else
         {
-            printf("Insira novamente as cedulas, o valor a ser depositado é de R$ %d,00.\n", valor);
+            printf("Insira novamente as cedulas, o valor a ser depositado eh de R$ %d,00.\n", valor);
             receberCedulas(dep);
-            for (i = 0; i < 7; i++)
+            for (soma = 0, i = 0; i < 7; i++) {
                 soma += dep[i] * v[i];
+            }
         }
     }
     for (i = 0; i < 7; i++)
         notas[i] += dep[i];
     notas[7] += soma;
     printf("Operacao realizada com sucesso!\n");
-    printf("O seu novo saldo é de R$ %d,00.\n", saldo + soma);
+    printf("O seu novo saldo eh de R$ %d,00.\n", saldo + soma);
     return (saldo + soma);
 }
 

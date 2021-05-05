@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
+#include <conio.h>
+#define R     "\x1b[31m"
+#define B     "\e[0;37m"
 int cont = 0;
 
 typedef struct user user;
@@ -14,6 +17,7 @@ struct user
     user *prev;
 };
 
+void printarLista(user *lista);
 void checarCedulas(int *valor);
 void checarTexto(char *v);
 void checarValor(int *valor);
@@ -21,7 +25,7 @@ user *checarLogin(user *estrutura);
 user *buscaPosicao(user *admin, char *username);
 user *procurarCadastro(char *username, user *admin);
 void receberCliente(user *admin, int *notas, int *loop);
-void cadastraCliente(user *admin);
+user *cadastraCliente(user *admin);
 void menuCliente(int *notas, user *cliente);
 void msgOperacao(int *notas, user *cliente);
 void receberCedulas(int *notas);
@@ -96,6 +100,7 @@ void checarValor(int *valor)
 
 user *checarLogin(user *estrutura)
 {
+    printf(R"checarLogin entrou \n"B);
     char username[15], password[15];
     printf("Usuario: ");
     scanf(" %15s", &username);
@@ -109,6 +114,8 @@ user *checarLogin(user *estrutura)
         {
             printf("Usuario inexistente. Finalizando operacao!\n");
             cont = 0;
+    
+            printf(R"checarLogin saiu \n"B);
             return posicao; //RETURN TA DANDO SEGMENTATION FAULT
         }
         printf("Usuario nao encontrado, por favor, tente novamente.\n");
@@ -137,16 +144,19 @@ user *checarLogin(user *estrutura)
     }
     cont = 0;
     printf("Bem vindo, %s!\n", posicao->usuario);
+    printf(R"checarLogin saiu \n"B);
     return posicao;
 }
 
 user *buscaPosicao(user *admin, char *username)
 {
+    printf(R"buscaPosicao entrou \n"B);
     user *posicao = admin;
-    while (posicao->next != NULL)
+    while (posicao != NULL)
     {
         if (strcmp(username, posicao->usuario) < 0)
         {
+            printf(R"buscaPosicao saiu \n"B);
             return posicao;
         }
         else
@@ -154,25 +164,33 @@ user *buscaPosicao(user *admin, char *username)
             posicao = posicao->next;
         }
     }
+    printf(R"buscaPosicao saiu \n"B);
     return posicao;
 }
 
 user *procurarCadastro(char *username, user *admin)
 {
+    printf(R"procurarCadastro entrou \n");
     user *posicao = admin;
-    if (strcmp(username, "admin") == 0)
+    if (strcmp(username, "admin") == 0) {
+
+        printf(R"procurarCadastro saiu \n"B);
         return admin;
-    while (posicao->next != NULL)
-    {
-        posicao = posicao->next;
-        if (strcmp(username, posicao->usuario) == 0)
-            return posicao;
     }
-    return NULL;
+    while (posicao != NULL)
+    {
+        if (strcmp(username, posicao->usuario) == 0) {
+            printf(R"procurarCadastro saiu \n"B);
+            return posicao;
+        }
+        posicao = posicao->next;
+    }
+    return posicao;
 }
 
 void receberCliente(user *admin, int *notas, int *loop)
 {
+    printf(R"receberCliente entrou \n"B);
     char res[3];
     printf("Bem vindo ao Banco do Programador!\n");
     printf("Deseja efetuar operacoes de administrador? [sim/nao] ");
@@ -186,6 +204,8 @@ void receberCliente(user *admin, int *notas, int *loop)
         if (strcmp(res, "sim") == 0)
         {
             *loop = 0;
+    
+            printf(R"receberCliente saiu \n"B);
             return;
         }
         else
@@ -211,7 +231,7 @@ void receberCliente(user *admin, int *notas, int *loop)
             checarTexto(res);
             if (strcmp(res, "sim") == 0)
             {
-                cadastraCliente(admin);
+                admin = cadastraCliente(admin);
                 printf("Seu cadastro foi realizado com sucesso!\n");
                 printf("Efetue o login para prosseguir ao menu do cliente.\n");
                 menuCliente(notas, checarLogin(admin));
@@ -220,45 +240,59 @@ void receberCliente(user *admin, int *notas, int *loop)
                 printf("OK! Obrigada, tenha um otimo dia.\n");
         }
     }
+    printf(R"receberCliente saiu \n"B);
 }
 
-void cadastraCliente(user *admin)
-{
-    user *novo = malloc(sizeof(user));
-    novo->saldo = 0;
-    printf("Crie seu nome de usuario: ");
-    scanf(" %15s", novo->usuario);
-    printf("Digite uma senha: ");
-    scanf(" %15s", novo->senha);
-    if (admin->next == NULL)
-    {
-        admin->next = novo;
-        novo->prev = admin;
+user *cadastraCliente(user *admin) {
+    if(admin == NULL) {
+        user *novo = malloc(sizeof(user));
+        novo->saldo = 0;
+        printf("Crie seu nome de usuario: ");
+        scanf(" %15s", novo->usuario);
+        printf("Digite uma senha: ");
+        scanf(" %15s", novo->senha);
+        novo->prev = NULL;
         novo->next = NULL;
+        return novo;
     }
-    else
-    {
-        user *posicao = buscaPosicao(admin, novo->usuario);
-        if (posicao->next == NULL)
-        {
-            posicao->next = novo;
-            novo->prev = posicao;
-            novo->next = NULL;
-        }
-        else
-        {
-            novo->next = posicao->next;
-            novo->prev = posicao;
-            posicao->next = novo;
-            novo->next->prev = novo;
-        }
+    else {
+        admin->next = cadastraCliente(admin->next);
+        admin->next->prev = admin;
+        return admin;
     }
 }
+
+/*user *ordenaCliente(user *admin) { Ha algum erro aqui
+    user *inicio = admin, *lista = admin;
+    user *atual = malloc(sizeof(user));
+    while(inicio) {
+        strcpy(atual->usuario, inicio->usuario);
+        strcpy(atual->senha, inicio->senha);
+        atual->saldo = inicio->saldo;
+        if(inicio->prev = NULL)
+            lista = inicio->prev;
+        while(lista != NULL && strcmp(atual->usuario, lista->usuario) < 0) {
+            strcpy(lista->next->usuario, lista->usuario);
+            strcpy(lista->usuario, atual->usuario);
+            strcpy(lista->next->senha, lista->senha);
+            strcpy(lista->senha, atual->senha);
+            lista->next->saldo = lista->saldo;
+            lista->saldo = atual->saldo;
+            if(lista->prev == NULL) 
+                break;
+            lista = lista->prev;
+        }
+        inicio = inicio->next;
+    }
+    return inicio;
+}*/
 
 void menuCliente(int *notas, user *cliente)
 {
-    if (cliente == NULL) {
-        printf("entrei.");
+    printf(R"menuCliente entrou \n"B);
+    if (!cliente) {
+
+        printf(R"menuCliente saiu \n"B);
         return;
     }
     char res[3];
@@ -309,10 +343,12 @@ void menuCliente(int *notas, user *cliente)
             msgOperacao(notas, cliente);
         }
     }
+    printf(R"menuCliente saiu \n"B);
 }
 
 void msgOperacao(int *notas, user *cliente)
 {
+    printf(R"msgOperacao entrou \n"B);
     char res[3];
     printf("Deseja realizar outra operacao? [sim/nao] ");
     scanf(" %s", &res);
@@ -324,10 +360,12 @@ void msgOperacao(int *notas, user *cliente)
     }
     else
         menuCliente(notas, cliente);
+    printf(R"msgOperacao saiu \n"B);
 }
 
 void receberCedulas(int *notas)
 {
+    printf(R"receberCedulas entrou \n"B);
     int v[] = {200, 100, 50, 20, 10, 5, 2}, i;
     for(i = 0; i < 7; i++)
     {
@@ -335,6 +373,7 @@ void receberCedulas(int *notas)
         scanf("%d", &notas[i]);
         checarCedulas(&notas[i]);
     }
+    printf(R"receberCedulas saiu \n"B);
 }
 
 void printarCedulas(int *notas)
@@ -385,6 +424,7 @@ int depositar(int *notas, int saldo)
         printf("Voce inseriu R$ %d,00. Deseja depositar essa quantia? [sim/nao] ", soma);
         scanf(" %s", &res);
         checarTexto(res);
+        v[0] = 200;
         if (strcmp(res, "sim") == 0)
         {
             for (i = 0; i < 7; i++)
@@ -486,4 +526,13 @@ void liberar(user *admin)
         free(admin);
     liberar(admin->next);
     free(admin);
+}
+
+void printarLista(user *lista) {
+    user *posicao = lista;
+    while(posicao) {
+        printf("%s ", posicao->usuario);
+        posicao = posicao->next;
+    }
+    printf("\n");
 }

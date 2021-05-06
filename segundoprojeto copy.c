@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
+#include <windows.h>
 int cont = 0;
 
 typedef struct user user;
@@ -11,17 +12,15 @@ struct user
     char *senha;
     int saldo;
     user *next;
-    user *prev;
 };
 
 void checarCedulas(int *valor);
 void checarTexto(char *v);
 void checarValor(int *valor);
 user *checarLogin(user *estrutura);
-user *buscaPosicao(user *admin, char *username);
 user *procurarCadastro(char *username, user *admin);
 void receberCliente(user *admin, int *notas, int *loop);
-user *cadastraCliente(user *admin);
+void *cadastraCliente(user *admin);
 void menuCliente(int *notas, user *cliente);
 void msgOperacao(int *notas, user *cliente);
 void receberCedulas(int *notas);
@@ -36,8 +35,8 @@ int main()
     user *admin = malloc(sizeof(user));
     admin->usuario = "admin";
     admin->senha = "admin";
+    admin->saldo = 0;
     admin->next = NULL;
-    admin->prev = NULL;
     int notas[] = {0, 0, 0, 0, 0, 0, 0, 0};
     int loop = 1;
     printf("Este caixa eletronico acabou de ser iniciado.\n");
@@ -52,7 +51,7 @@ int main()
     printf("\n|---------------------------|\n");
     printf("|    PROGRAMA ENCERRADO!    |\n");
     printf("|---------------------------|\n");
-    liberar(admin);
+    
 
     return 0;
 }
@@ -104,8 +103,9 @@ user *checarLogin(user *estrutura)
     user *posicao = procurarCadastro(username, estrutura);
     if (posicao == NULL)
     {
-        while(posicao == NULL && cont < 3) {
-            printf("Usuario nao encontrado, por favor, tente novamente.\n");
+        while (posicao == NULL && cont < 3)
+        {
+            printf("Usuario nao encontrado, por favor, tente novamente. (%d tentativas restantes)\n", (3 - cont));
             printf("Usuario: ");
             scanf(" %15s", &username);
             printf("Senha: ");
@@ -113,7 +113,7 @@ user *checarLogin(user *estrutura)
             posicao = procurarCadastro(username, estrutura);
             cont++;
         }
-        if (cont == 3) 
+        if (cont == 3)
         {
             printf("Usuario inexistente. Finalizando operacao!\n");
             cont = 0;
@@ -123,8 +123,9 @@ user *checarLogin(user *estrutura)
     }
     else if (strcmp(password, posicao->senha) != 0)
     {
-        while(strcmp(password, posicao->senha) != 0 && cont < 3) {
-            printf("Senha invalida, por favor, tente novamente.\n");
+        while (strcmp(password, posicao->senha) != 0 && cont < 3)
+        {
+            printf("Senha invalida, por favor, tente novamente. (%d tentativas restantes)\n", (3 - cont));
             printf("Usuario: ");
             scanf(" %15s", &username);
             printf("Senha: ");
@@ -143,7 +144,8 @@ user *checarLogin(user *estrutura)
                 scanf(" %15s", &username);
             }
             printf("Usuario confirmado.\nDigite a nova senha: ");
-            scanf(" %15s", posicao->senha);
+            scanf(" %15s", &password);
+            posicao->senha = password;
             printf("Senha alterada com sucesso!\nEfetue o login.\n");
             return (posicao = checarLogin(estrutura));
         }
@@ -153,33 +155,16 @@ user *checarLogin(user *estrutura)
     return posicao;
 }
 
-user *buscaPosicao(user *admin, char *username)
-{
-    user *posicao = admin;
-    while (posicao->next != NULL)
-    {
-        if (strcmp(username, posicao->usuario) < 0)
-        {
-            return posicao;
-        }
-        else
-        {
-            posicao = posicao->next;
-        }
-    }
-    return posicao;
-}
-
 user *procurarCadastro(char *username, user *admin)
 {
     user *posicao = admin;
     if (strcmp(username, "admin") == 0)
         return admin;
-    while (posicao->next != NULL)
+    while (posicao)
     {
-        posicao = posicao->next;
         if (strcmp(username, posicao->usuario) == 0)
             return posicao;
+        posicao = posicao->next;
     }
     return NULL;
 }
@@ -235,28 +220,36 @@ void receberCliente(user *admin, int *notas, int *loop)
     }
 }
 
-user *cadastraCliente(user *admin) {
-    if(admin == NULL) {
-        user *novo = malloc(sizeof(user));
-        novo->saldo = 0;
-        printf("Crie seu nome de usuario: ");
-        scanf(" %15s", novo->usuario);
-        printf("Digite uma senha: ");
-        scanf(" %15s", novo->senha);
-        novo->prev = NULL;
-        novo->next = NULL;
-        return novo;
+void *cadastraCliente(user *admin)
+{
+    user *novo = malloc(sizeof(user));
+    novo->usuario = malloc(sizeof(char) * 15);
+    novo->senha = malloc(sizeof(char) * 15);
+    printf("Crie seu nome de usuario: ");
+    scanf("%s", novo->usuario);
+    printf("Digite uma senha: ");
+    scanf("%s", novo->senha);
+    novo->saldo = 0;
+    novo->next = NULL;
+    if (admin == NULL)
+    {
+        admin = novo;
     }
-    else {
-        admin->next = cadastraCliente(admin->next);
-        admin->next->prev = admin;
-        return admin;
+    else
+    {
+        user *posicao = admin;
+        while (posicao->next != NULL)
+        {
+            posicao = posicao->next;
+        }
+        posicao->next = novo;
     }
 }
 
 void menuCliente(int *notas, user *cliente)
 {
-    if (cliente == NULL) {
+    if (cliente == NULL)
+    {
         return;
     }
     char res[3];
@@ -327,7 +320,7 @@ void msgOperacao(int *notas, user *cliente)
 void receberCedulas(int *notas)
 {
     int v[] = {200, 100, 50, 20, 10, 5, 2}, i;
-    for(i = 0; i < 7; i++)
+    for (i = 0; i < 7; i++)
     {
         printf("Insira a quantidade de cedulas de R$ %d,00: ", v[i]);
         scanf("%d", &notas[i]);
@@ -341,12 +334,12 @@ void printarCedulas(int *notas)
     printf("\n|-----------CAIXA-----------|\n");
     printf("   Valor  | Qtd. de cedulas \n");
     printf("|---------------------------|\n");
-    for(i = 0; i < 7; i++)
-        if(notas[i] > 0)
+    for (i = 0; i < 7; i++)
+        if (notas[i] > 0)
         {
-            if(v[i] >= 100)
+            if (v[i] >= 100)
                 printf("   %d,00 |      %d \n", v[i], notas[i]);
-            else if(v[i] >= 10)
+            else if (v[i] >= 10)
                 printf("    %d,00 |      %d \n", v[i], notas[i]);
             else
                 printf("    0%d,00 |      %d \n", v[i], notas[i]);
@@ -369,14 +362,15 @@ void reabastecer(int *notas)
 
 int depositar(int *notas, int saldo)
 {
-    int valor, dep[] = {0, 0, 0, 0, 0, 0, 0}, v[] = {0, 200, 100, 50, 20, 10, 5, 2}, soma = 0, i;
+    int valor, dep[] = {0, 0, 0, 0, 0, 0, 0}, v[] = {200, 100, 50, 20, 10, 5, 2}, soma = 0, i;
     char res[3];
     printf("Digite o valor que deseja depositar: ");
     scanf("%d", &valor);
     checarValor(&valor);
     receberCedulas(dep);
-    for (notas[7] = 0, i = 0; i < 7; i++) {
-        soma += dep[i] * v[i + 1];
+    for (notas[7] = 0, i = 0; i < 7; i++)
+    {
+        soma += dep[i] * v[i];
         notas[7] += notas[i] * v[i];
     }
     while (soma != valor)
@@ -398,8 +392,9 @@ int depositar(int *notas, int saldo)
         {
             printf("Insira novamente as cedulas, o valor a ser depositado eh de R$ %d,00.\n", valor);
             receberCedulas(dep);
-            for (soma = 0, i = 0; i < 7; i++) {
-                soma += dep[i] * v[i + 1];
+            for (soma = 0, i = 0; i < 7; i++)
+            {
+                soma += dep[i] * v[i];
             }
         }
     }
@@ -414,7 +409,8 @@ int depositar(int *notas, int saldo)
 int sacar(int *notas, int saldo)
 {
     int i, valor, sac[8], v[] = {200, 100, 50, 20, 10, 5, 2};
-    for(notas[7] = 0, i = 0; i < 7; i++) {
+    for (notas[7] = 0, i = 0; i < 7; i++)
+    {
         sac[i] = notas[i];
         notas[7] += notas[i] * v[i];
     }
@@ -438,7 +434,7 @@ int sacar(int *notas, int saldo)
         scanf("%d", &valor);
     }
     sac[7] = valor;
-    for(i = 0; i < 7; i++)
+    for (i = 0; i < 7; i++)
     {
         while (sac[i] > 0 && (sac[7] - v[i]) >= 0)
         {
@@ -456,13 +452,13 @@ int sacar(int *notas, int saldo)
     else
     {
         printf("\n|-----------SAQUE-----------|\n");
-        for(i = 0; i < 7; i++)
+        for (i = 0; i < 7; i++)
         {
             if (sac[i] != notas[i])
             {
                 if (v[i] >= 100)
                     printf("    %d Notas de R$ %d,00    \n", (notas[i] - sac[i]), v[i]);
-                else if(v[i] >= 10)
+                else if (v[i] >= 10)
                     printf("    %d Notas de R$  %d,00    \n", (notas[i] - sac[i]), v[i]);
                 else
                     printf("    %d Notas de R$  0%d,00    \n", (notas[i] - sac[i]), v[i]);
@@ -481,10 +477,9 @@ int sacar(int *notas, int saldo)
     }
 }
 
-void liberar(user *admin) 
+void liberar(user *admin)
 {
-    if(admin->next == NULL)
+    if (admin->next == NULL)
         free(admin);
     liberar(admin->next);
-    free(admin);
 }

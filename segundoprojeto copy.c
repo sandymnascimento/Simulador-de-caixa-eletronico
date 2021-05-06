@@ -104,19 +104,34 @@ user *checarLogin(user *estrutura)
     user *posicao = procurarCadastro(username, estrutura);
     if (posicao == NULL)
     {
-        cont++;
+        while(posicao == NULL && cont < 3) {
+            printf("Usuario nao encontrado, por favor, tente novamente.\n");
+            printf("Usuario: ");
+            scanf(" %15s", &username);
+            printf("Senha: ");
+            scanf(" %15s", &password);
+            posicao = procurarCadastro(username, estrutura);
+            cont++;
+        }
         if (cont == 3) 
         {
             printf("Usuario inexistente. Finalizando operacao!\n");
             cont = 0;
-            return posicao; //RETURN TA DANDO SEGMENTATION FAULT
+            return posicao;
         }
-        printf("Usuario nao encontrado, por favor, tente novamente.\n");
-        checarLogin(estrutura);
+        cont = 0;
     }
     else if (strcmp(password, posicao->senha) != 0)
     {
-        cont++;
+        while(strcmp(password, posicao->senha) != 0 && cont < 3) {
+            printf("Senha invalida, por favor, tente novamente.\n");
+            printf("Usuario: ");
+            scanf(" %15s", &username);
+            printf("Senha: ");
+            scanf(" %15s", &password);
+            posicao = procurarCadastro(username, estrutura);
+            cont++;
+        }
         if (cont == 3)
         {
             printf("Limite de tentativas excedido, voce deve alterar a senha.\n");
@@ -127,13 +142,11 @@ user *checarLogin(user *estrutura)
                 printf("O usuario digitado nao coincide, tente novamente.\n");
                 scanf(" %15s", &username);
             }
-            printf("Digite a nova senha: ");
+            printf("Usuario confirmado.\nDigite a nova senha: ");
             scanf(" %15s", posicao->senha);
             printf("Senha alterada com sucesso!\nEfetue o login.\n");
+            return (posicao = checarLogin(estrutura));
         }
-        else
-            printf("Senha invalida, por favor, tente novamente.\n");
-        checarLogin(estrutura);
     }
     cont = 0;
     printf("Bem vindo, %s!\n", posicao->usuario);

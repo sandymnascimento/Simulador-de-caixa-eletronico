@@ -6,11 +6,7 @@
 #define R "\033[31m"
 #define G "\033[32m"
 #define W "\033[37m"
-<<<<<<< HEAD
-int cont = 0;
-=======
-int cont = 0, entrada = 1, loop = 1;
->>>>>>> 31ab7299ccfef89f7ac1de0f9b37aae5202f4809
+int cont = 0, entrada = 1;
 
 typedef struct user user;
 struct user
@@ -46,10 +42,6 @@ int main()
     admin->next = NULL;
     int notas[] = {0, 0, 0, 0, 0, 0, 0, 0};
     int loop = 1;
-<<<<<<< HEAD
-=======
-
->>>>>>> 31ab7299ccfef89f7ac1de0f9b37aae5202f4809
     printf(G "\nIniciando...\n\n");
     Sleep(500);
     printf(W "Este caixa eletronico acabou de ser iniciado.\n");
@@ -58,10 +50,6 @@ int main()
     reabastecer(notas);
     printarCedulas(notas);
     printf("Encerrando sessao do administrador.\n");
-<<<<<<< HEAD
-=======
-
->>>>>>> 31ab7299ccfef89f7ac1de0f9b37aae5202f4809
     while (loop)
         receberCliente(admin, notas, &loop);
 
@@ -123,7 +111,6 @@ user *checarLogin(user *estrutura)
     if (posicao == NULL)
     {
         while (posicao == NULL && cont < 3)
-<<<<<<< HEAD
         {
             printf(R "Usuario nao encontrado, por favor, tente novamente. (Tentativas restantes: %d)\n", (3 - cont));
             Sleep(500);
@@ -138,22 +125,6 @@ user *checarLogin(user *estrutura)
         }
         if (posicao == NULL && cont == 3)
         {
-=======
-        {
-            printf(R "Usuario nao encontrado, por favor, tente novamente. (Tentativas restantes: %d)\n", (3 - cont));
-            Sleep(500);
-            printf(W "\n|---------------------------|\n");
-            printf("  Usuario: ");
-            scanf(" %15s", &username);
-            printf("  Senha:   ");
-            scanf(" %15s", &password);
-            printf("|---------------------------|\n\n");
-            posicao = procurarCadastro(username, estrutura);
-            cont++;
-        }
-        if (posicao == NULL && cont == 3)
-        {
->>>>>>> 31ab7299ccfef89f7ac1de0f9b37aae5202f4809
             Sleep(500);
             printf(R "Usuario inexistente. Finalizando operacao!\n" W);
             cont = 0;
@@ -164,7 +135,6 @@ user *checarLogin(user *estrutura)
     if (strcmp(password, posicao->senha) != 0)
     {
         while (strcmp(password, posicao->senha) != 0 && cont < 3)
-<<<<<<< HEAD
         {
             printf(R "Senha invalida, por favor, tente novamente. (Tentativas restantes: %d)\n", (3 - cont));
             Sleep(500);
@@ -192,35 +162,6 @@ user *checarLogin(user *estrutura)
         }
         if (strcmp(password, posicao->senha) != 0 && cont == 3)
         {
-=======
-        {
-            printf(R "Senha invalida, por favor, tente novamente. (Tentativas restantes: %d)\n", (3 - cont));
-            Sleep(500);
-            printf(W "\n|---------------------------|\n");
-            printf("  Usuario: ");
-            scanf(" %15s", &username);
-            printf("  Senha:   ");
-            scanf(" %15s", &password);
-            printf("|---------------------------|\n\n");
-            posicao = procurarCadastro(username, estrutura);
-            if (posicao == NULL && cont < 3){
-                printf(R "Usuario nao encontrado, por favor, tente novamente. (Tentativas restantes: %d)\n", (3 - cont));
-                Sleep(500);
-                printf(W "\n|---------------------------|\n");
-                printf("  Usuario: ");
-                scanf(" %15s", &username);
-                printf("  Senha:   ");
-                scanf(" %15s", &password);
-                printf("|---------------------------|\n\n");
-                posicao = procurarCadastro(username, estrutura);
-                cont++;
-            }
-            else
-                cont++;
-        }
-        if (strcmp(password, posicao->senha) != 0 && cont == 3)
-        {
->>>>>>> 31ab7299ccfef89f7ac1de0f9b37aae5202f4809
             printf(R "Limite de tentativas excedido, voce deve alterar a senha.\n\n");
             printf(W "Confirme seu username: ");
             scanf(" %15s", &username);
@@ -231,11 +172,7 @@ user *checarLogin(user *estrutura)
             }
             printf(G "\nUsuario confirmado.\n\n" W "Digite a nova senha: ");
             scanf(" %15s", &password);
-<<<<<<< HEAD
-            posicao->senha = password;
-=======
             strcpy(posicao->senha, password);
->>>>>>> 31ab7299ccfef89f7ac1de0f9b37aae5202f4809
             printf(G "\nSenha alterada com sucesso!\n" W "\nEfetue o login.\n");
             cont = 0;
             return (posicao = checarLogin(estrutura));
@@ -468,16 +405,12 @@ void printarCedulas(int *notas)
 
 void reabastecer(int *notas)
 {
-<<<<<<< HEAD
-    printf(G "\nIniciando operacao de reabastecimento...\n\n" W);
-=======
     if(entrada) {
         printf(G "Iniciando operacao de reabastecimento...\n\n" W);
         entrada--;
     }
     else
         printf(G "\nIniciando operacao de reabastecimento...\n\n" W);
->>>>>>> 31ab7299ccfef89f7ac1de0f9b37aae5202f4809
     Sleep(500);
     int rnotas[7], v[] = {200, 100, 50, 20, 10, 5, 2}, i;
     receberCedulas(rnotas);
@@ -573,11 +506,7 @@ int sacar(int *notas, int saldo)
     sac[7] = valor;
     for (i = 0; i < 7; i++)
     {
-<<<<<<< HEAD
-        while (sac[i] > 0 && (sac[7] - v[i]) >= 0)
-=======
         while (sac[i] > 0 && ((sac[7] - v[i]) >= 2 || (sac[7] - v[i]) == 0))
->>>>>>> 31ab7299ccfef89f7ac1de0f9b37aae5202f4809
         {
             sac[i]--;
             sac[7] -= v[i];

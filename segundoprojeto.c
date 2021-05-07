@@ -6,7 +6,7 @@
 #define R "\033[31m"
 #define G "\033[32m"
 #define W "\033[37m"
-int cont = 0, entrada = 1;
+int cont = 0, entrada = 1, loop = 1;
 
 typedef struct user user;
 struct user
@@ -42,6 +42,7 @@ int main()
     admin->next = NULL;
     int notas[] = {0, 0, 0, 0, 0, 0, 0, 0};
     int loop = 1;
+
     printf(G "\nIniciando...\n\n");
     Sleep(500);
     printf(W "Este caixa eletronico acabou de ser iniciado.\n");
@@ -50,8 +51,10 @@ int main()
     reabastecer(notas);
     printarCedulas(notas);
     printf("Encerrando sessao do administrador.\n");
+
     while (loop)
         receberCliente(admin, notas, &loop);
+
     printf("\n|---------------------------|\n");
     printf("|    PROGRAMA ENCERRADO!    |\n");
     printf("|---------------------------|\n\n");
@@ -171,7 +174,7 @@ user *checarLogin(user *estrutura)
             }
             printf(G "\nUsuario confirmado.\n\n" W "Digite a nova senha: ");
             scanf(" %15s", &password);
-            posicao->senha = password;
+            strcpy(posicao->senha, password);
             printf(G "\nSenha alterada com sucesso!\n" W "\nEfetue o login.\n");
             cont = 0;
             return (posicao = checarLogin(estrutura));
@@ -505,7 +508,7 @@ int sacar(int *notas, int saldo)
     sac[7] = valor;
     for (i = 0; i < 7; i++)
     {
-        while (sac[i] > 0 && (sac[7] - v[i]) >= 0)
+        while (sac[i] > 0 && ((sac[7] - v[i]) >= 2 || (sac[7] - v[i]) == 0))
         {
             sac[i]--;
             sac[7] -= v[i];

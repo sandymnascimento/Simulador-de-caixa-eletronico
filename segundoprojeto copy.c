@@ -51,7 +51,6 @@ int main()
     printf("\n|---------------------------|\n");
     printf("|    PROGRAMA ENCERRADO!    |\n");
     printf("|---------------------------|\n");
-    
 
     return 0;
 }
@@ -231,255 +230,261 @@ void *cadastraCliente(user *admin)
     scanf("%s", novo->senha);
     novo->saldo = 0;
     novo->next = NULL;
-    if (admin == NULL)
+    if (procurarCadastro(novo->usuario, admin))
     {
-        admin = novo;
+        printf("Usuario ja existente, tente novamente.\n");
+        free(novo->usuario);
+        free(novo->senha);
+        free(novo);
+        cadastraCliente(admin);
     }
-    else
-    {
-        user *posicao = admin;
-        while (posicao->next != NULL)
+    else{
+        if (admin == NULL)
+            admin = novo;
+        else
         {
-            posicao = posicao->next;
+            user *posicao = admin;
+            while (posicao->next != NULL)
+                posicao = posicao->next;
+            posicao->next = novo;
         }
-        posicao->next = novo;
     }
 }
 
-void menuCliente(int *notas, user *cliente)
-{
-    if (cliente == NULL)
+    void menuCliente(int *notas, user *cliente)
     {
-        return;
-    }
-    char res[3];
-    printf("Voce possui um saldo de R$ %d,00.\n", cliente->saldo);
-    if (cliente->saldo == 0)
-    {
-        printf("Com esse saldo voce apenas pode realizar depositos.\n");
-        printf("Deseja realizar um deposito agora? [sim/nao] ");
-        scanf(" %s", &res);
-        checarTexto(res);
-        if (strcmp(res, "nao") == 0)
-            printf("Encerrando sessao.\nObrigado, volte sempre!\n");
+        if (cliente == NULL)
+        {
+            return;
+        }
+        char res[3];
+        printf("Voce possui um saldo de R$ %d,00.\n", cliente->saldo);
+        if (cliente->saldo == 0)
+        {
+            printf("Com esse saldo voce apenas pode realizar depositos.\n");
+            printf("Deseja realizar um deposito agora? [sim/nao] ");
+            scanf(" %s", &res);
+            checarTexto(res);
+            if (strcmp(res, "nao") == 0)
+                printf("Encerrando sessao.\nObrigado, volte sempre!\n");
+            else
+            {
+                cliente->saldo = depositar(notas, cliente->saldo);
+                msgOperacao(notas, cliente);
+            }
+        }
         else
         {
-            cliente->saldo = depositar(notas, cliente->saldo);
-            msgOperacao(notas, cliente);
-        }
-    }
-    else
-    {
-        int rets, retd;
-        char v[8], s[] = "saque", d[] = "deposito";
-        printf("Digite a operacao que deseja realizar: [saque/deposito] ");
-        scanf(" %s", &v);
-        rets = strncmp(v, s, 5);
-        retd = strncmp(v, d, 8);
-        while (rets != 0 && retd != 0)
-        {
-            printf("Comando invalido!\n");
+            int rets, retd;
+            char v[8], s[] = "saque", d[] = "deposito";
             printf("Digite a operacao que deseja realizar: [saque/deposito] ");
             scanf(" %s", &v);
             rets = strncmp(v, s, 5);
             retd = strncmp(v, d, 8);
-        }
-        if (retd == 0)
-        {
-            cliente->saldo = depositar(notas, cliente->saldo);
-            msgOperacao(notas, cliente);
-        }
-        else
-        {
-            if (notas[7] == 0)
+            while (rets != 0 && retd != 0)
             {
-                printf("Não ha dinheiro disponivel para saque nesse momento.\nAguarde um administrador realizar o reabastecimento.\n");
-                return;
+                printf("Comando invalido!\n");
+                printf("Digite a operacao que deseja realizar: [saque/deposito] ");
+                scanf(" %s", &v);
+                rets = strncmp(v, s, 5);
+                retd = strncmp(v, d, 8);
             }
-            cliente->saldo = sacar(notas, cliente->saldo);
-            msgOperacao(notas, cliente);
-        }
-    }
-}
-
-void msgOperacao(int *notas, user *cliente)
-{
-    char res[3];
-    printf("Deseja realizar outra operacao? [sim/nao] ");
-    scanf(" %s", &res);
-    checarTexto(res);
-    if (strcmp(res, "nao") == 0)
-    {
-        printf("O seu saldo atual eh de R$ %d,00.\n", cliente->saldo);
-        printf("Encerrando sessao.\nObrigado, volte sempre!\n");
-    }
-    else
-        menuCliente(notas, cliente);
-}
-
-void receberCedulas(int *notas)
-{
-    int v[] = {200, 100, 50, 20, 10, 5, 2}, i;
-    for (i = 0; i < 7; i++)
-    {
-        printf("Insira a quantidade de cedulas de R$ %d,00: ", v[i]);
-        scanf("%d", &notas[i]);
-        checarCedulas(&notas[i]);
-    }
-}
-
-void printarCedulas(int *notas)
-{
-    int v[] = {200, 100, 50, 20, 10, 05, 02}, i;
-    printf("\n|-----------CAIXA-----------|\n");
-    printf("   Valor  | Qtd. de cedulas \n");
-    printf("|---------------------------|\n");
-    for (i = 0; i < 7; i++)
-        if (notas[i] > 0)
-        {
-            if (v[i] >= 100)
-                printf("   %d,00 |      %d \n", v[i], notas[i]);
-            else if (v[i] >= 10)
-                printf("    %d,00 |      %d \n", v[i], notas[i]);
+            if (retd == 0)
+            {
+                cliente->saldo = depositar(notas, cliente->saldo);
+                msgOperacao(notas, cliente);
+            }
             else
-                printf("    0%d,00 |      %d \n", v[i], notas[i]);
+            {
+                if (notas[7] == 0)
+                {
+                    printf("Não ha dinheiro disponivel para saque nesse momento.\nAguarde um administrador realizar o reabastecimento.\n");
+                    return;
+                }
+                cliente->saldo = sacar(notas, cliente->saldo);
+                msgOperacao(notas, cliente);
+            }
         }
-    printf("|---------------------------|\n");
-    printf("   Total  |   R$ %d,00 \n", notas[7]);
-    printf("|---------------------------|\n\n");
-}
-
-void reabastecer(int *notas)
-{
-    int rnotas[7], v[] = {200, 100, 50, 20, 10, 5, 2}, i;
-    receberCedulas(rnotas);
-    for (notas[7] = 0, i = 0; i < 7; i++)
-    {
-        notas[i] += rnotas[i];
-        notas[7] += notas[i] * v[i];
     }
-}
 
-int depositar(int *notas, int saldo)
-{
-    int valor, dep[] = {0, 0, 0, 0, 0, 0, 0}, v[] = {200, 100, 50, 20, 10, 5, 2}, soma = 0, i;
-    char res[3];
-    printf("Digite o valor que deseja depositar: ");
-    scanf("%d", &valor);
-    checarValor(&valor);
-    receberCedulas(dep);
-    for (notas[7] = 0, i = 0; i < 7; i++)
+    void msgOperacao(int *notas, user *cliente)
     {
-        soma += dep[i] * v[i];
-        notas[7] += notas[i] * v[i];
-    }
-    while (soma != valor)
-    {
-        printf("O valor a ser depositado nao corresponde com as cedulas inseridas.\n");
-        printf("Voce inseriu R$ %d,00. Deseja depositar essa quantia? [sim/nao] ", soma);
+        char res[3];
+        printf("Deseja realizar outra operacao? [sim/nao] ");
         scanf(" %s", &res);
         checarTexto(res);
-        if (strcmp(res, "sim") == 0)
+        if (strcmp(res, "nao") == 0)
         {
-            for (i = 0; i < 7; i++)
-                notas[i] += dep[i];
-            notas[7] += soma;
-            printf("Operacao realizada com sucesso!\n");
-            printf("O seu novo saldo eh de R$ %d,00.\n", saldo + soma);
-            return (saldo + soma);
+            printf("O seu saldo atual eh de R$ %d,00.\n", cliente->saldo);
+            printf("Encerrando sessao.\nObrigado, volte sempre!\n");
+        }
+        else
+            menuCliente(notas, cliente);
+    }
+
+    void receberCedulas(int *notas)
+    {
+        int v[] = {200, 100, 50, 20, 10, 5, 2}, i;
+        for (i = 0; i < 7; i++)
+        {
+            printf("Insira a quantidade de cedulas de R$ %d,00: ", v[i]);
+            scanf("%d", &notas[i]);
+            checarCedulas(&notas[i]);
+        }
+    }
+
+    void printarCedulas(int *notas)
+    {
+        int v[] = {200, 100, 50, 20, 10, 05, 02}, i;
+        printf("\n|-----------CAIXA-----------|\n");
+        printf("   Valor  | Qtd. de cedulas \n");
+        printf("|---------------------------|\n");
+        for (i = 0; i < 7; i++)
+            if (notas[i] > 0)
+            {
+                if (v[i] >= 100)
+                    printf("   %d,00 |      %d \n", v[i], notas[i]);
+                else if (v[i] >= 10)
+                    printf("    %d,00 |      %d \n", v[i], notas[i]);
+                else
+                    printf("    0%d,00 |      %d \n", v[i], notas[i]);
+            }
+        printf("|---------------------------|\n");
+        printf("   Total  |   R$ %d,00 \n", notas[7]);
+        printf("|---------------------------|\n\n");
+    }
+
+    void reabastecer(int *notas)
+    {
+        int rnotas[7], v[] = {200, 100, 50, 20, 10, 5, 2}, i;
+        receberCedulas(rnotas);
+        for (notas[7] = 0, i = 0; i < 7; i++)
+        {
+            notas[i] += rnotas[i];
+            notas[7] += notas[i] * v[i];
+        }
+    }
+
+    int depositar(int *notas, int saldo)
+    {
+        int valor, dep[] = {0, 0, 0, 0, 0, 0, 0}, v[] = {200, 100, 50, 20, 10, 5, 2}, soma = 0, i;
+        char res[3];
+        printf("Digite o valor que deseja depositar: ");
+        scanf("%d", &valor);
+        checarValor(&valor);
+        receberCedulas(dep);
+        for (notas[7] = 0, i = 0; i < 7; i++)
+        {
+            soma += dep[i] * v[i];
+            notas[7] += notas[i] * v[i];
+        }
+        while (soma != valor)
+        {
+            printf("O valor a ser depositado nao corresponde com as cedulas inseridas.\n");
+            printf("Voce inseriu R$ %d,00. Deseja depositar essa quantia? [sim/nao] ", soma);
+            scanf(" %s", &res);
+            checarTexto(res);
+            if (strcmp(res, "sim") == 0)
+            {
+                for (i = 0; i < 7; i++)
+                    notas[i] += dep[i];
+                notas[7] += soma;
+                printf("Operacao realizada com sucesso!\n");
+                printf("O seu novo saldo eh de R$ %d,00.\n", saldo + soma);
+                return (saldo + soma);
+            }
+            else
+            {
+                printf("Insira novamente as cedulas, o valor a ser depositado eh de R$ %d,00.\n", valor);
+                receberCedulas(dep);
+                for (soma = 0, i = 0; i < 7; i++)
+                {
+                    soma += dep[i] * v[i];
+                }
+            }
+        }
+        for (i = 0; i < 7; i++)
+            notas[i] += dep[i];
+        notas[7] += soma;
+        printf("Operacao realizada com sucesso!\n");
+        printf("O seu novo saldo eh de R$ %d,00.\n", saldo + soma);
+        return (saldo + soma);
+    }
+
+    int sacar(int *notas, int saldo)
+    {
+        int i, valor, sac[8], v[] = {200, 100, 50, 20, 10, 5, 2};
+        for (notas[7] = 0, i = 0; i < 7; i++)
+        {
+            sac[i] = notas[i];
+            notas[7] += notas[i] * v[i];
+        }
+        printf("Digite o valor que deseja sacar: ");
+        scanf("%d", &valor);
+        checarValor(&valor);
+        while (valor > saldo)
+        {
+            printf("O valor a ser sacado eh incompativel com o saldo da conta.\n");
+            printf("O saque tem que ser menor ou igual a seu saldo: %d\n", saldo);
+            printf("Por favor, digite o valor a ser sacado: ");
+            scanf("%d", &valor);
+        }
+        while (valor > notas[7])
+        {
+            printf("O valor a ser sacado eh incompativel com o dinheiro disponivel na maquina.\n");
+            printf("O saque tem que ser menor ou igual a R$ %d,00.\n", notas[7]);
+            printf("Abaixo uma amostragem das cedulas disponiveis.\n");
+            printarCedulas(notas);
+            printf("Por favor, digite o valor a ser sacado: ");
+            scanf("%d", &valor);
+        }
+        sac[7] = valor;
+        for (i = 0; i < 7; i++)
+        {
+            while (sac[i] > 0 && (sac[7] - v[i]) >= 0)
+            {
+                sac[i]--;
+                sac[7] -= v[i];
+            }
+        }
+        if (sac[7] != 0)
+        {
+            printf("Cedulas insuficientes para realizar a operacao!\n");
+            printf("Abaixo uma amostragem das cedulas disponiveis.\n");
+            printarCedulas(notas);
+            return saldo;
         }
         else
         {
-            printf("Insira novamente as cedulas, o valor a ser depositado eh de R$ %d,00.\n", valor);
-            receberCedulas(dep);
-            for (soma = 0, i = 0; i < 7; i++)
+            printf("\n|-----------SAQUE-----------|\n");
+            for (i = 0; i < 7; i++)
             {
-                soma += dep[i] * v[i];
+                if (sac[i] != notas[i])
+                {
+                    if (v[i] >= 100)
+                        printf("    %d Notas de R$ %d,00    \n", (notas[i] - sac[i]), v[i]);
+                    else if (v[i] >= 10)
+                        printf("    %d Notas de R$  %d,00    \n", (notas[i] - sac[i]), v[i]);
+                    else
+                        printf("    %d Notas de R$  0%d,00    \n", (notas[i] - sac[i]), v[i]);
+                }
             }
-        }
-    }
-    for (i = 0; i < 7; i++)
-        notas[i] += dep[i];
-    notas[7] += soma;
-    printf("Operacao realizada com sucesso!\n");
-    printf("O seu novo saldo eh de R$ %d,00.\n", saldo + soma);
-    return (saldo + soma);
-}
+            printf("|---------------------------|\n");
+            printf("   Total  |      %d,00 \n", valor);
+            printf("|---------------------------|\n\n");
 
-int sacar(int *notas, int saldo)
-{
-    int i, valor, sac[8], v[] = {200, 100, 50, 20, 10, 5, 2};
-    for (notas[7] = 0, i = 0; i < 7; i++)
-    {
-        sac[i] = notas[i];
-        notas[7] += notas[i] * v[i];
-    }
-    printf("Digite o valor que deseja sacar: ");
-    scanf("%d", &valor);
-    checarValor(&valor);
-    while (valor > saldo)
-    {
-        printf("O valor a ser sacado eh incompativel com o saldo da conta.\n");
-        printf("O saque tem que ser menor ou igual a seu saldo: %d\n", saldo);
-        printf("Por favor, digite o valor a ser sacado: ");
-        scanf("%d", &valor);
-    }
-    while (valor > notas[7])
-    {
-        printf("O valor a ser sacado eh incompativel com o dinheiro disponivel na maquina.\n");
-        printf("O saque tem que ser menor ou igual a R$ %d,00.\n", notas[7]);
-        printf("Abaixo uma amostragem das cedulas disponiveis.\n");
-        printarCedulas(notas);
-        printf("Por favor, digite o valor a ser sacado: ");
-        scanf("%d", &valor);
-    }
-    sac[7] = valor;
-    for (i = 0; i < 7; i++)
-    {
-        while (sac[i] > 0 && (sac[7] - v[i]) >= 0)
-        {
-            sac[i]--;
-            sac[7] -= v[i];
-        }
-    }
-    if (sac[7] != 0)
-    {
-        printf("Cedulas insuficientes para realizar a operacao!\n");
-        printf("Abaixo uma amostragem das cedulas disponiveis.\n");
-        printarCedulas(notas);
-        return saldo;
-    }
-    else
-    {
-        printf("\n|-----------SAQUE-----------|\n");
-        for (i = 0; i < 7; i++)
-        {
-            if (sac[i] != notas[i])
+            for (notas[7] = 0, i = 0; i < 7; i++)
             {
-                if (v[i] >= 100)
-                    printf("    %d Notas de R$ %d,00    \n", (notas[i] - sac[i]), v[i]);
-                else if (v[i] >= 10)
-                    printf("    %d Notas de R$  %d,00    \n", (notas[i] - sac[i]), v[i]);
-                else
-                    printf("    %d Notas de R$  0%d,00    \n", (notas[i] - sac[i]), v[i]);
+                notas[i] = notas[i] - (notas[i] - sac[i]);
+                notas[7] += notas[i] * v[i];
             }
+            return (saldo - valor);
         }
-        printf("|---------------------------|\n");
-        printf("   Total  |      %d,00 \n", valor);
-        printf("|---------------------------|\n\n");
-
-        for (notas[7] = 0, i = 0; i < 7; i++)
-        {
-            notas[i] = notas[i] - (notas[i] - sac[i]);
-            notas[7] += notas[i] * v[i];
-        }
-        return (saldo - valor);
     }
-}
 
-void liberar(user *admin)
-{
-    if (admin->next == NULL)
-        free(admin);
-    liberar(admin->next);
-}
+    void liberar(user * admin)
+    {
+        if (admin->next == NULL)
+            free(admin);
+        liberar(admin->next);
+    }
